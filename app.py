@@ -2,11 +2,12 @@ import streamlit as st
 import requests
 from PIL import Image
 from io import BytesIO
+import sys
 
 # =======================================================
 # 1. CONFIGURACIÓN
 # =======================================================
-# La URL de tu API de Render
+# La URL de tu API de Render (la misma utilizada anteriormente)
 RENDER_API_URL = "https://radiografia-ia-api.onrender.com/classify"
 
 st.set_page_config(page_title="Clasificador de Radiografías", layout="centered")
@@ -25,11 +26,14 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     try:
         # Abrir y mostrar la imagen subida
-        image = Image.open(uploaded_file)
+        # Utiliza un archivo 'BytesIO' para que Image.open() pueda leer el archivo subido
+        image_bytes = BytesIO(uploaded_file.getvalue())
+        image = Image.open(image_bytes)
         st.image(image, caption="Radiografía Subida", use_column_width=True)
     except Exception as e:
+        # **CÓDIGO CORREGIDO:** Se usa st.stop() en lugar de return
         st.error(f"Error al cargar la imagen. Asegúrate de que el formato sea válido: {e}")
-        return # Detiene la ejecución si la imagen no se puede abrir
+        st.stop()
     
     # Botón para iniciar la clasificación
     if st.button("Clasificar Imagen", key="classify_button"):
@@ -38,9 +42,10 @@ if uploaded_file is not None:
         # 3. CONSUMO DE LA API DE RENDER
         # =======================================================
         
-        st.info("Clasificando... por favor espera.")
+        st.info("Clasificando... por favor espera. Esto puede tardar unos segundos si el servidor de Render está inactivo.")
         
-        # Restablecer el puntero del archivo para que 'requests' lo lea desde el inicio
+        # Necesitamos restablecer el puntero del archivo a 0 antes de enviarlo
+        # para que 'requests' pueda leer el contenido completo del archivo.
         uploaded_file.seek(0)
         
         # Preparar la carga útil (payload) para la petición POST
@@ -65,12 +70,14 @@ if uploaded_file is not None:
                 st.error(f"❌ Error al conectar con la API de Render.")
                 st.write(f"Código de estado: {response.status_code}")
                 
-                # Intentar mostrar el error devuelto por Render
+                # Intentar mostrar el error detallado devuelto por Render
                 try:
                     st.json(response.json())
                 except requests.exceptions.JSONDecodeError:
-                    st.code(f"Respuesta de Render: {response.text}") # Muestra el texto si no es JSON
+                    st.code(f"Respuesta de Render (no JSON): {response.text}")
                 
         except requests.exceptions.RequestException as e:
-            st.error("❌ Error de conexión: No se pudo alcanzar la API de Render.")
+            st.error("❌ Error de conexión: No se pudo alcanzar la API de Render. Revisa la URL.")
             st.code(f"Detalle del error: {e}")
+            
+# Fin del código
