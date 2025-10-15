@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from PIL import Image
 from io import BytesIO
-import time # Para simular un retraso en la carga visual
+# import time # Ya no es necesario si se elimina la simulación de retraso
 
 # =======================================================
 # 1. CONFIGURACIÓN
@@ -12,14 +12,18 @@ RENDER_API_URL = "https://radiografia-ia-api.onrender.com/classify"
 st.set_page_config(
     page_title="Clasificador de Radiografías IA",
     page_icon="🩺",
-    layout="centered", # o "wide" si prefieres más espacio horizontal
-    initial_sidebar_state="collapsed" # Esconde la barra lateral por defecto
+    layout="centered", 
+    initial_sidebar_state="collapsed" 
 )
 
 # Estilos CSS personalizados para una apariencia más limpia
 st.markdown(
     """
     <style>
+    /* Ocultar elementos de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
     .reportview-container .main .block-container{
         padding-top: 2rem;
         padding-right: 1rem;
@@ -86,11 +90,12 @@ if uploaded_file is not None:
         st.write("---")
         st.write("Imagen lista para clasificar.")
         
-        # Botón de clasificación, ahora alineado y con mejor diseño
+        # Botón de clasificación
         if st.button("🚀 Clasificar Radiografía", key="classify_button"):
             
             st.write("---") # Separador
-            st.info("Clasificando... por favor espera. Esto puede tardar unos segundos si el servidor de Render está inactivo.")
+            # **TEXTO ELIMINADO** (Mensaje de espera más conciso)
+            st.info("Clasificando...") 
             
             # Restablecer el puntero del archivo
             uploaded_file.seek(0)
@@ -100,8 +105,6 @@ if uploaded_file is not None:
             }
             
             try:
-                # Simular un pequeño delay para una mejor UX si la respuesta es muy rápida
-                # time.sleep(1) 
                 response = requests.post(RENDER_API_URL, files=files)
                 
                 # =======================================================
@@ -128,5 +131,4 @@ if uploaded_file is not None:
                 st.error("❌ Error de conexión: No se pudo alcanzar la API de Render. Revisa la URL.")
                 st.code(f"Detalle del error: {e}")
 
-st.write("---")
-st.markdown("Desarrollado con ❤️ por tu asistente IA.")
+# **TEXTO ELIMINADO** (Línea final y separador)
